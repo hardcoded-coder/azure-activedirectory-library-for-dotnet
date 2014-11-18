@@ -16,6 +16,7 @@
 // limitations under the License.
 //----------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -29,11 +30,9 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
         string ContentType { set; }
 
-        string Method { set; }
-
         bool UseDefaultCredentials { set; }
 
-        WebHeaderCollection Headers { get; }
+        Dictionary<string, string> Headers { get; }
 
         Task<IHttpWebResponse> GetResponseSyncOrAsync(CallState callState);
     }

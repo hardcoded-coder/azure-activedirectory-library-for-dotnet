@@ -50,6 +50,8 @@
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
@@ -136,6 +138,12 @@
     <Compile Include="..\ADAL.Common\EncodingHelper.cs">
       <Link>Common\EncodingHelper.cs</Link>
     </Compile>
+    <Compile Include="..\ADAL.Common\HttpClientWebResponse.cs">
+      <Link>Common\HttpClientWebResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\ADAL.Common\HttpClientWrapper.cs">
+      <Link>Common\HttpClientWrapper.cs</Link>
+    </Compile>
     <Compile Include="..\ADAL.Common\HttpHelper.cs">
       <Link>Common\HttpHelper.cs</Link>
     </Compile>
@@ -144,9 +152,6 @@
     </Compile>
     <Compile Include="..\ADAL.Common\HttpWebRequestWrapper.cs">
       <Link>Common\HttpWebRequestWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\ADAL.Common\HttpWebResponseFactory.cs">
-      <Link>Common\HttpWebResponseFactory.cs</Link>
     </Compile>
     <Compile Include="..\ADAL.Common\HttpWebResponseWrapper.cs">
       <Link>Common\HttpWebResponseWrapper.cs</Link>

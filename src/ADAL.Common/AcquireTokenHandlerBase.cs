@@ -222,7 +222,38 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
         {
             string uri = HttpHelper.CheckForExtraQueryParameter(this.Authenticator.TokenUri);
 
-            TokenResponse tokenResponse = await HttpHelper.SendPostRequestAndDeserializeJsonResponseAsync<TokenResponse>(uri, requestParameters, this.CallState);
+            ClientMetrics clientMetrics = new ClientMetrics();
+            TokenResponse tokenResponse = null;
+
+            try
+            {
+                IHttpWebRequest request = NetworkPlugin.HttpWebRequestFactory.Create(uri);
+                request.ContentType = "application/x-www-form-urlencoded";
+                HttpHelper.AddCorrelationIdHeadersToRequest(request.Headers, this.CallState);
+                AdalIdHelper.AddAsHeaders(request.Headers);
+
+                clientMetrics.BeginClientMetricsRecord(request.Headers, this.CallState);
+
+                request.BodyParameters = requestParameters;
+                using (IHttpWebResponse response = await request.GetResponseSyncOrAsync(this.CallState))
+                {
+                    HttpHelper.VerifyCorrelationIdHeaderInReponse(response.Headers, this.CallState);
+                    clientMetrics.SetLastError(null);
+                    tokenResponse = HttpHelper.DeserializeResponse<TokenResponse>(response.ResponseStream);
+                }
+            }
+            catch (WebException ex)
+            {
+                tokenResponse = OAuth2Response.ReadErrorResponse(ex.Response);
+                clientMetrics.SetLastError(tokenResponse.ErrorCodes);
+                var serviceEx = new AdalServiceException(tokenResponse.Error, tokenResponse.ErrorDescription, ex);
+                Logger.LogException(this.CallState, serviceEx);
+                throw serviceEx;
+            }
+            finally
+            {
+                clientMetrics.EndClientMetricsRecord(ClientMetricsEndpointType.Token, this.CallState);
+            }
 
             return OAuth2Response.ParseTokenResponse(tokenResponse, this.CallState);
         }

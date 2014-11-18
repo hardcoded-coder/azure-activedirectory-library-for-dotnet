@@ -77,9 +77,9 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             return hash;
         }
 
-        public static void CloseHttpWebResponse(WebResponse response)
+        public static CloseResponseMethod CloseHttpWebResponse(WebResponse response)
         {
-            response.Close();
+            return response.Close;
         }
 
         private static class NativeMethods

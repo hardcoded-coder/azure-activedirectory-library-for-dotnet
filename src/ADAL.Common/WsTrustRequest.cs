@@ -67,18 +67,15 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             }
 
             StringBuilder messageBuilder = BuildMessage(DefaultAppliesTo, url.AbsoluteUri, credential);
-            Dictionary<string, string> headers = new Dictionary<string, string> 
-            { 
-                { "SOAPAction", XmlNamespace.Issue.ToString() }
-            };
+            request.Headers["SOAPAction"] = XmlNamespace.Issue.ToString();
 
             WsTrustResponse wstResponse;
 
             try
             {
-                HttpHelper.SetPostRequest(request, new RequestParameters(messageBuilder), callState, headers);
+                request.BodyParameters = new RequestParameters(messageBuilder);
                 IHttpWebResponse response = await request.GetResponseSyncOrAsync(callState);
-                wstResponse = WsTrustResponse.CreateFromResponse(response.GetResponseStream());
+                wstResponse = WsTrustResponse.CreateFromResponse(response.ResponseStream);
             }
             catch (WebException ex)
             {

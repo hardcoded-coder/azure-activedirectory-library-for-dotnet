@@ -55,7 +55,15 @@ namespace Test.ADAL.Common
         public static string SerializeWebException(WebException ex)
         {
             var dictionary = new Dictionary<string, string>();
-            dictionary["StatusCode"] = ((int)((HttpWebResponse)(ex.Response)).StatusCode).ToString();
+            if (ex.Response is HttpWebResponse)
+            {
+                dictionary["StatusCode"] = ((int)((HttpWebResponse)(ex.Response)).StatusCode).ToString();
+            }
+            else if (ex.Response is HttpClientWebResponse)
+            {
+                dictionary["StatusCode"] = ((int)((HttpClientWebResponse)(ex.Response)).StatusCode).ToString();
+            }
+
             Stream responseStream = ex.Response.GetResponseStream();
             if (responseStream != null)
             {

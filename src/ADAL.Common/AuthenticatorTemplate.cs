@@ -82,16 +82,15 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             try
             {
                 IHttpWebRequest request = NetworkPlugin.HttpWebRequestFactory.Create(instanceDiscoveryEndpoint);
-                request.Method = "GET";
-                HttpHelper.AddCorrelationIdHeadersToRequest(request, callState);
-                AdalIdHelper.AddAsHeaders(request);
+                HttpHelper.AddCorrelationIdHeadersToRequest(request.Headers, callState);
+                AdalIdHelper.AddAsHeaders(request.Headers);
 
-                clientMetrics.BeginClientMetricsRecord(request, callState);
+                clientMetrics.BeginClientMetricsRecord(request.Headers, callState);
 
                 using (var response = await request.GetResponseSyncOrAsync(callState))
                 {
-                    HttpHelper.VerifyCorrelationIdHeaderInReponse(response, callState);
-                    InstanceDiscoveryResponse discoveryResponse = HttpHelper.DeserializeResponse<InstanceDiscoveryResponse>(response);
+                    HttpHelper.VerifyCorrelationIdHeaderInReponse(response.Headers, callState);
+                    InstanceDiscoveryResponse discoveryResponse = HttpHelper.DeserializeResponse<InstanceDiscoveryResponse>(response.ResponseStream);
                     clientMetrics.SetLastError(null);
                     if (discoveryResponse.TenantDiscoveryEndpoint == null)
                     {

@@ -51,11 +51,10 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             try
             {
                 IHttpWebRequest request = NetworkPlugin.HttpWebRequestFactory.Create(federationMetadataUrl);
-                request.Method = "GET";
                 request.ContentType = "application/soap+xml";
                 using (var response = await request.GetResponseSyncOrAsync(callState))
                 {
-                    mexDocument = XDocument.Load(response.GetResponseStream(), LoadOptions.None);
+                    mexDocument = XDocument.Load(response.ResponseStream, LoadOptions.None);
                 }
             }
             catch (WebException ex)

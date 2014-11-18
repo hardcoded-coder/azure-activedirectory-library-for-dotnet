@@ -17,6 +17,8 @@
 //----------------------------------------------------------------------
 
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 {
@@ -25,5 +27,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
         IHttpWebRequest Create(string uri);
 
         IHttpWebResponse CreateResponse(WebResponse response);
+
+        Task<IHttpWebResponse> CreateResponseAsync(HttpResponseMessage response);
     }
 }

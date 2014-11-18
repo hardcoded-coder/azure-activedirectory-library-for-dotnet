@@ -17,18 +17,22 @@
 //----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
 namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 {
+    internal delegate void CloseResponseMethod();
+    internal delegate void ResponseMethod();
+
     internal interface IHttpWebResponse : IDisposable
     {
         HttpStatusCode StatusCode { get; }
 
-        WebHeaderCollection Headers { get; }
-        
-        Stream GetResponseStream();
+        Dictionary<string, string> Headers { get; }
+
+        Stream ResponseStream { get; }
 
         void Close();
     }

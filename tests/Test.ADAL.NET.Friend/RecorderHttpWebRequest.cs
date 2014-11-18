@@ -73,15 +73,6 @@ namespace Test.ADAL.NET.Friend
             }
         }
 
-        public string Method
-        {
-            set
-            {
-                this.keyElements["Method"] = value;
-                this.internalHttpWebRequest.Method = value;
-            }
-        }
-
         public bool UseDefaultCredentials
         {
             set
@@ -91,7 +82,7 @@ namespace Test.ADAL.NET.Friend
             }
         }
 
-        public WebHeaderCollection Headers
+        public Dictionary<string, string> Headers
         {
             get
             {
@@ -101,7 +92,7 @@ namespace Test.ADAL.NET.Friend
 
         public async Task<IHttpWebResponse> GetResponseSyncOrAsync(CallState callState)
         {
-            foreach (var headerKey in this.internalHttpWebRequest.Headers.AllKeys)
+            foreach (var headerKey in this.internalHttpWebRequest.Headers.Keys)
             {
                 this.keyElements["Header-" + headerKey] = this.internalHttpWebRequest.Headers[headerKey];
             }
@@ -146,7 +137,7 @@ namespace Test.ADAL.NET.Friend
             try
             {
                 IHttpWebResponse response = await this.internalHttpWebRequest.GetResponseSyncOrAsync(callState);
-                responseStream = response.GetResponseStream();
+                responseStream = response.ResponseStream;
                 string str = SerializationHelper.StreamToString(responseStream);
                 IOMap.Add(key, 'P' + str);
                 return new RecorderHttpWebResponse(str, HttpStatusCode.OK);

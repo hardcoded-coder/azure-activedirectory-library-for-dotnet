@@ -172,14 +172,14 @@
     <Compile Include="..\ADAL.Common\EncodingHelper.cs">
       <Link>Common\EncodingHelper.cs</Link>
     </Compile>
+    <Compile Include="..\ADAL.Common\HttpClientWrapper.cs">
+      <Link>Common\HttpClientWrapper.cs</Link>
+    </Compile>
     <Compile Include="..\ADAL.Common\HttpWebRequestFactory.cs">
       <Link>Common\HttpWebRequestFactory.cs</Link>
     </Compile>
     <Compile Include="..\ADAL.Common\HttpWebRequestWrapper.cs">
       <Link>Common\HttpWebRequestWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\ADAL.Common\HttpWebResponseFactory.cs">
-      <Link>Common\HttpWebResponseFactory.cs</Link>
     </Compile>
     <Compile Include="..\ADAL.Common\HttpWebResponseWrapper.cs">
       <Link>Common\HttpWebResponseWrapper.cs</Link>

@@ -35,7 +35,7 @@ namespace Test.ADAL.Common
         public static void AdalIdTest()
         {
             IHttpWebRequest request = NetworkPlugin.HttpWebRequestFactory.Create("https://test");
-            AdalIdHelper.AddAsHeaders(request);
+            AdalIdHelper.AddAsHeaders(request.Headers);
 
             Verify.AreEqual(4, request.Headers.Count);
             Verify.IsNotNull(request.Headers[AdalIdParameter.Product]);

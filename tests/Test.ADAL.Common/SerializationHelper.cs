@@ -22,6 +22,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System.Net.Http;
 
 namespace Test.ADAL.Common
 {
@@ -126,5 +127,9 @@ namespace Test.ADAL.Common
             responseStream.Position = 0;
             return responseStream;
         }
+    }
+
+    class ReplayerResponseMessage : HttpResponseMessage
+    {
     }
 }

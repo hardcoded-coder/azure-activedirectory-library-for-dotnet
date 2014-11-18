@@ -16,8 +16,17 @@
 // limitations under the License.
 //----------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+
+using Test.ADAL.Common;
 
 namespace Test.ADAL.NET.Friend
 {
@@ -30,7 +39,72 @@ namespace Test.ADAL.NET.Friend
 
         public IHttpWebResponse CreateResponse(WebResponse response)
         {
-            return new RecorderHttpWebResponse(response);
+            var replayerWebResponse = response as ReplayerWebResponse;
+            var httpWebResponse = response as HttpWebResponse;
+            var httpClientWebResponse = response as HttpClientWebResponse;
+            WebHeaderCollection responseHeaders;
+            HttpStatusCode statusCode;
+            if (replayerWebResponse != null)
+            {
+                statusCode = replayerWebResponse.StatusCode;
+                responseHeaders = replayerWebResponse.Headers;
+            }
+            else if (httpWebResponse != null)
+            {
+                statusCode = httpWebResponse.StatusCode;
+                responseHeaders = httpWebResponse.Headers;
+            }
+            else if (httpClientWebResponse != null)
+            {
+                statusCode = httpClientWebResponse.StatusCode;
+                responseHeaders = httpClientWebResponse.Headers;
+            }
+            else
+            {
+                statusCode = HttpStatusCode.NotImplemented;
+                responseHeaders = new WebHeaderCollection();
+            }
+
+            var headers = new Dictionary<string, string>();
+            foreach (var key in response.Headers.AllKeys)
+            {
+                headers[key] = responseHeaders[key];
+            }
+
+            var responseStream = response.GetResponseStream();
+            return new RecorderHttpWebResponse(responseStream, headers, statusCode,
+                delegate
+                {
+                    responseStream.Close();
+                    responseStream = null;
+                } );
+        }
+
+        public async Task<IHttpWebResponse> CreateResponseAsync(HttpResponseMessage response)
+        {
+            var replayerWebResponse = response as ReplayerResponseMessage;
+            var httpWebResponse = response as HttpResponseMessage;
+            HttpStatusCode statusCode;
+            if (replayerWebResponse != null)
+            {
+                statusCode = replayerWebResponse.StatusCode;
+            }
+            else if (httpWebResponse != null)
+            {
+                statusCode = httpWebResponse.StatusCode;
+            }
+            else
+            {
+                statusCode = HttpStatusCode.NotImplemented;
+            }
+
+            var headers = new Dictionary<string, string>();
+            foreach (var kvp in response.Headers)
+            {
+                headers[kvp.Key] = kvp.Value.First();
+            }
+
+            return new RecorderHttpWebResponse(await response.Content.ReadAsStreamAsync(), headers, statusCode, null);
         }
     }
 }

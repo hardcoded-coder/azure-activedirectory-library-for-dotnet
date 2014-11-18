@@ -17,6 +17,7 @@
 //----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
         public HttpWebRequestWrapper(string uri)
         {
             this.request = (HttpWebRequest)WebRequest.Create(uri);
+            this.Headers = new Dictionary<string, string>();
         }
 
         public RequestParameters BodyParameters { get; set; }
@@ -52,14 +54,6 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             }
         }
 
-        public string Method
-        {
-            set
-            {
-                this.request.Method = value;
-            }
-        }
-
         public bool UseDefaultCredentials
         {
             set
@@ -68,13 +62,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             }
         }
 
-        public WebHeaderCollection Headers
-        {
-            get
-            {
-                return this.request.Headers;
-            }
-        }
+        public Dictionary<string, string> Headers { get; private set; }
 
         public int TimeoutInMilliSeconds
         {
@@ -86,12 +74,22 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
         public async Task<IHttpWebResponse> GetResponseSyncOrAsync(CallState callState)
         {
+            foreach (KeyValuePair<string, string> kvp in Headers)
+            {
+                this.request.Headers[kvp.Key] = kvp.Value;
+            }
+
             if (this.BodyParameters != null)
             {
+                this.request.Method = "POST";
                 using (Stream stream = await GetRequestStreamSyncOrAsync(callState))
                 {
                     this.BodyParameters.WriteToStream(stream);
                 }
+            }
+            else
+            {
+                this.request.Method = "GET";
             }
 
 #if ADAL_NET
@@ -135,7 +133,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 #endif
         }
 
-        public async Task<Stream> GetRequestStreamSyncOrAsync(CallState callState)
+        private async Task<Stream> GetRequestStreamSyncOrAsync(CallState callState)
         {
 #if ADAL_NET
             if (callState != null && callState.CallSync)

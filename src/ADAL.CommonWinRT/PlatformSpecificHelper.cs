@@ -49,9 +49,9 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             return CryptographicBuffer.EncodeToBase64String(hashed);
         }
 
-        public static void CloseHttpWebResponse(WebResponse response)
+        public static CloseResponseMethod CloseHttpWebResponse(WebResponse response)
         {
-            // response.Close is Missing in WinRT
+            return null;
         }
     }
 }

@@ -16,7 +16,11 @@
 // limitations under the License.
 //----------------------------------------------------------------------
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 {
@@ -29,7 +33,33 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
         public IHttpWebResponse CreateResponse(WebResponse response)
         {
-            return new HttpWebResponseWrapper(response);
+            var headers = new Dictionary<string, string>();
+            if (response.Headers != null)
+            {
+                foreach (var key in response.Headers.AllKeys)
+                {
+                    headers[key] = response.Headers[key];
+                }
+            }
+
+            var httpWebResponse = response as HttpWebResponse;
+            HttpStatusCode statusCode = (httpWebResponse != null) ? httpWebResponse.StatusCode : HttpStatusCode.NotImplemented;
+
+            return new HttpWebResponseWrapper(response.GetResponseStream(), headers, statusCode, PlatformSpecificHelper.CloseHttpWebResponse(response));
+        }
+
+        public async Task<IHttpWebResponse> CreateResponseAsync(HttpResponseMessage response)
+        {
+            var headers = new Dictionary<string, string>();
+            if (response.Headers != null)
+            {
+                foreach (var kvp in response.Headers)
+                {
+                    headers[kvp.Key] = kvp.Value.First();
+                }
+            }
+
+            return new HttpWebResponseWrapper(await response.Content.ReadAsStreamAsync(), headers, response.StatusCode, null);            
         }
     }
 }
