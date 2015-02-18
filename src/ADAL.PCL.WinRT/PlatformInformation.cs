@@ -43,7 +43,9 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
         public override async Task<string> GetUserPrincipalNameAsync()
         {
-            if (!UserInformation.NameAccessAllowed)
+            return null;
+
+            /*if (!UserInformation.NameAccessAllowed)
             {
                 throw new AdalException(AdalErrorEx.CannotAccessUserInformation, AdalErrorMessageEx.CannotAccessUserInformation);
             }
@@ -55,7 +57,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             catch (UnauthorizedAccessException ex)
             {
                 throw new AdalException(AdalErrorEx.UnauthorizedUserInformationAccess, AdalErrorMessageEx.UnauthorizedUserInformationAccess, ex);
-            }
+            }*/
         }
 
         public override string GetProcessorArchitecture()
@@ -72,13 +74,15 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
         public override string GetDeviceModel()
         {
-            var deviceInformation = new Windows.Security.ExchangeActiveSyncProvisioning.EasClientDeviceInformation();
-            return deviceInformation.SystemProductName;
+            // TODO: The following method seems unsupported in UAP and needs to be replaced.
+            // var deviceInformation = new Windows.Security.ExchangeActiveSyncProvisioning.EasClientDeviceInformation();
+            // return deviceInformation.SystemProductName;
+            return null;
         }
 
         public override async Task<bool> IsUserLocalAsync(CallState callState)
         {
-            if (!UserInformation.NameAccessAllowed)
+            /*if (!UserInformation.NameAccessAllowed)
             {
                 // The access is not allowed and we cannot determine whether this is a local user or not. So, we do NOT add form auth parameter.
                 // This is the case where we can advise customers to add extra query parameter if they want.
@@ -97,7 +101,9 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
                 // This mostly means Enterprise capability is missing, so WIA cannot be used and
                 // we return true to add form auth parameter in the caller.
                 return true;
-            }            
+            }*/
+
+            return false;            
         }
 
         public override bool IsDomainJoined()
