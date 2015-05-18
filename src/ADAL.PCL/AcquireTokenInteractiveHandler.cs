@@ -73,6 +73,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             this.UserIdentifierType = userId.Type;
 
             this.LoadFromCache = (tokenCache != null && parameters != null && PlatformPlugin.PlatformInformation.GetCacheLoadPolicy(parameters));
+            this.StoreToCache = false;
 
             this.SupportADFS = true;
         }
@@ -203,6 +204,14 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             {
                 throw new AdalServiceException(this.authorizationResult.Error, this.authorizationResult.ErrorDescription);
             }
+        }
+
+        protected override async Task<AuthenticationResultEx> SendTokenRequestAsync()
+        {
+            var task = new Task<AuthenticationResultEx>(() => new AuthenticationResultEx { Result = new AuthenticationResult("authorizationCode", this.authorizationResult.Code, DateTimeOffset.MinValue) });
+            task.RunSynchronously();
+
+            return await task;  // This is a temporary hack. It returns authorization code in AuthenticationResultEx.
         }
     }
 }
