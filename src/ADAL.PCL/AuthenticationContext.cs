@@ -299,30 +299,30 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
         /// <param name="userId">Identifier of the user token is requested for. This parameter can be <see cref="UserIdentifier"/>.Any.</param>
         /// <param name="extraQueryParameters">This parameter will be appended as is to the query string in the HTTP authentication request to the authority. The parameter can be null.</param>
         /// <returns>URL of the authorize endpoint including the query parameters.</returns>
-        public async Task<Uri> GetAuthorizationRequestUrlAsync(string []scopes, string clientId, Uri redirectUri, UserIdentifier userId, string extraQueryParameters)
+        public async Task<Uri> GetAuthorizationRequestUrlAsync(string []scopes, string []scopesForConsent, string clientId, Uri redirectUri, UserIdentifier userId, string extraQueryParameters)
         {
-            var handler = new AcquireTokenInteractiveHandler(this.Authenticator, this.TokenCache, scopes[0], clientId, redirectUri, null, userId, extraQueryParameters, null);
+            var handler = new AcquireTokenInteractiveHandler(this.Authenticator, this.TokenCache, scopes, scopesForConsent, clientId, redirectUri, null, userId, extraQueryParameters, null);
             return await handler.CreateAuthorizationUriAsync(this.CorrelationId);
         }
 
-        public async Task<string> AcquireUserAuthorizationAsync(string []scopes, string clientId, Uri redirectUri, IPlatformParameters parameters)
+        public async Task<string> AcquireUserAuthorizationAsync(string []scopes, string []scopesForConsent, string clientId, Uri redirectUri, IPlatformParameters parameters)
         {
-            return await this.AcquireTokenCommonAsync(scopes, clientId, redirectUri, parameters, UserIdentifier.AnyUser);
+            return await this.AcquireTokenCommonAsync(scopes, scopesForConsent, clientId, redirectUri, parameters, UserIdentifier.AnyUser);
         }
 
-        public async Task<string> AcquireUserAuthorizationAsync(string []scopes, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId)
+        public async Task<string> AcquireUserAuthorizationAsync(string []scopes, string []scopesForConsent, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId)
         {
-            return await this.AcquireTokenCommonAsync(scopes, clientId, redirectUri, parameters, userId);
+            return await this.AcquireTokenCommonAsync(scopes, scopesForConsent, clientId, redirectUri, parameters, userId);
         }
 
-        public async Task<string> AcquireUserAuthorizationAsync(string []scopes, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId, string extraQueryParameters)
+        public async Task<string> AcquireUserAuthorizationAsync(string []scopes, string []scopesForConsent, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId, string extraQueryParameters)
         {
-            return await this.AcquireTokenCommonAsync(scopes, clientId, redirectUri, parameters, userId, extraQueryParameters);
+            return await this.AcquireTokenCommonAsync(scopes, scopesForConsent, clientId, redirectUri, parameters, userId, extraQueryParameters);
         }
 
         private async Task<AuthenticationResult> AcquireTokenByAuthorizationCodeCommonAsync(string authorizationCode, Uri redirectUri, ClientKey clientKey, string []scopes)
         {
-            var handler = new AcquireTokenByAuthorizationCodeHandler(this.Authenticator, this.TokenCache, scopes != null ? scopes[0] : null, clientKey, authorizationCode, redirectUri);
+            var handler = new AcquireTokenByAuthorizationCodeHandler(this.Authenticator, this.TokenCache, scopes, clientKey, authorizationCode, redirectUri);
             return await handler.RunAsync();
         }
 
@@ -331,16 +331,16 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             return PlatformPlugin.WebUIFactory.CreateAuthenticationDialog(parameters);
         }
 
-        private async Task<string> AcquireTokenCommonAsync(string []scopes, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId, string extraQueryParameters = null)
+        private async Task<string> AcquireTokenCommonAsync(string []scopes, string[] scopesForConsent, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId, string extraQueryParameters = null)
         {
-            var handler = new AcquireTokenInteractiveHandler(this.Authenticator, this.TokenCache, scopes[0], clientId, redirectUri, parameters, userId, extraQueryParameters, this.CreateWebAuthenticationDialog(parameters));
+            var handler = new AcquireTokenInteractiveHandler(this.Authenticator, this.TokenCache, scopes, scopesForConsent, clientId, redirectUri, parameters, userId, extraQueryParameters, this.CreateWebAuthenticationDialog(parameters));
             var result = await handler.RunAsync();
             return result.AccessToken;  // This is actually authorization code.
         }
 
         private async Task<AuthenticationResult> AcquireTokenSilentCommonAsync(string []scopes, ClientKey clientKey, UserIdentifier userId)
         {
-            var handler = new AcquireTokenSilentHandler(this.Authenticator, this.TokenCache, scopes[0], clientKey, userId);
+            var handler = new AcquireTokenSilentHandler(this.Authenticator, this.TokenCache, scopes, clientKey, userId);
             return await handler.RunAsync();
         }
     }

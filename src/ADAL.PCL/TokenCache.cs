@@ -138,7 +138,8 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
                 writer.Write(this.tokenCacheDictionary.Count);
                 foreach (KeyValuePair<TokenCacheKey, AuthenticationResultEx> kvp in this.tokenCacheDictionary)
                 {
-                    writer.Write(string.Format("{1}{0}{2}{0}{3}{0}{4}", Delimiter, kvp.Key.Authority, kvp.Key.Resource, kvp.Key.ClientId, (int)kvp.Key.TokenSubjectType));
+                    writer.Write(string.Format("{1}{0}{2}{0}{3}{0}{4}", Delimiter, kvp.Key.Authority, AdalHelpers.CreateSingleStringFromArray(kvp.Key.Scopes), 
+                        kvp.Key.ClientId, (int)kvp.Key.TokenSubjectType));
                     writer.Write(kvp.Value.Serialize());
                 }
 
@@ -184,7 +185,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
                     string[] kvpElements = keyString.Split(new[] { Delimiter }, StringSplitOptions.None);
                     AuthenticationResultEx resultEx = AuthenticationResultEx.Deserialize(reader.ReadString());
-                    TokenCacheKey key = new TokenCacheKey(kvpElements[0], kvpElements[1], kvpElements[2], (TokenSubjectType)int.Parse(kvpElements[3]), resultEx.Result.UserInfo);
+                    TokenCacheKey key = new TokenCacheKey(kvpElements[0], AdalHelpers.CreateArrayFromSingleString(kvpElements[1]), kvpElements[2], (TokenSubjectType)int.Parse(kvpElements[3]), resultEx.Result.UserInfo);
 
                     this.tokenCacheDictionary.Add(key, resultEx);
                 }
@@ -223,7 +224,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             TokenCacheNotificationArgs args = new TokenCacheNotificationArgs
                 {
                     TokenCache = this,
-                    Resource = item.Resource,
+                    Scopes = item.Scopes,
                     ClientId = item.ClientId,
                     UniqueId = item.UniqueId,
                     DisplayableId = item.DisplayableId
@@ -280,13 +281,13 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             }
         }
 
-        internal AuthenticationResultEx LoadFromCache(string authority, string resource, string clientId, TokenSubjectType subjectType, string uniqueId, string displayableId, CallState callState)
+        internal AuthenticationResultEx LoadFromCache(string authority, string[] scopes, string clientId, TokenSubjectType subjectType, string uniqueId, string displayableId, CallState callState)
         {
             PlatformPlugin.Logger.Verbose(callState, "Looking up cache for a token...");
 
             AuthenticationResultEx resultEx = null;
 
-            KeyValuePair<TokenCacheKey, AuthenticationResultEx>? kvp = this.LoadSingleItemFromCache(authority, resource, clientId, subjectType, uniqueId, displayableId, callState);
+            KeyValuePair<TokenCacheKey, AuthenticationResultEx>? kvp = this.LoadSingleItemFromCache(authority, scopes, clientId, subjectType, uniqueId, displayableId, callState);
 
             if (kvp.HasValue)
             {
@@ -299,8 +300,9 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
                     resultEx.Result.AccessToken = null;
                     PlatformPlugin.Logger.Verbose(callState, "An expired or near expiry token was found in the cache");
                 }
-                else if (!cacheKey.ResourceEquals(resource))
-                {
+                else if (!cacheKey.ScopeContains(scopes))
+                {   //look for token that contains all the requested scopes previously consented. 
+                    //Intersection is not enough as the request may fail due to consent required.
                     PlatformPlugin.Logger.Verbose(callState, 
                         string.Format("Multi resource refresh token for resource '{0}' will be used to acquire token for '{1}'", cacheKey.Resource, resource));
                     var newResultEx = new AuthenticationResultEx
@@ -339,7 +341,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             return resultEx;
         }
 
-        internal void StoreToCache(AuthenticationResultEx result, string authority, string resource, string clientId, TokenSubjectType subjectType, CallState callState)
+        internal void StoreToCache(AuthenticationResultEx result, string authority, string[] scopes, string clientId, TokenSubjectType subjectType, CallState callState)
         {
             PlatformPlugin.Logger.Verbose(callState, "Storing token in the cache...");
 
@@ -348,13 +350,13 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
             this.OnBeforeWrite(new TokenCacheNotificationArgs
             {
-                Resource = resource,
+                Scopes = scopes,
                 ClientId = clientId,
                 UniqueId = uniqueId,
                 DisplayableId = displayableId
             });
 
-            TokenCacheKey tokenCacheKey = new TokenCacheKey(authority, resource, clientId, subjectType, result.Result.UserInfo);
+            TokenCacheKey tokenCacheKey = new TokenCacheKey(authority, scopes, clientId, subjectType, result.Result.UserInfo);
             this.tokenCacheDictionary[tokenCacheKey] = result;
             PlatformPlugin.Logger.Verbose(callState, "An item was stored in the cache");
             this.UpdateCachedMrrtRefreshTokens(result, authority, clientId, subjectType);
@@ -376,13 +378,13 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             }
         }
 
-        private KeyValuePair<TokenCacheKey, AuthenticationResultEx>? LoadSingleItemFromCache(string authority, string resource, string clientId, TokenSubjectType subjectType, string uniqueId, string displayableId, CallState callState)
+        private KeyValuePair<TokenCacheKey, AuthenticationResultEx>? LoadSingleItemFromCache(string authority, string[] scopes, string clientId, TokenSubjectType subjectType, string uniqueId, string displayableId, CallState callState)
         {
             // First identify all potential tokens.
             List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> items = this.QueryCache(authority, clientId, subjectType, uniqueId, displayableId);
 
             List<KeyValuePair<TokenCacheKey, AuthenticationResultEx>> resourceSpecificItems =
-                items.Where(p => p.Key.ResourceEquals(resource)).ToList();
+                items.Where(p => p.Key.ScopeEquals(scopes)).ToList();
 
             int resourceValuesCount = resourceSpecificItems.Count();
             KeyValuePair<TokenCacheKey, AuthenticationResultEx>? returnValue = null;

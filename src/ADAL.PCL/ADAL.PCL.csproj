@@ -62,6 +62,7 @@
     <Compile Include="AcquireTokenOnBehalfHandler.cs" />
     <Compile Include="AcquireTokenSilentHandler.cs" />
     <Compile Include="AdalException.cs" />
+    <Compile Include="AdalHelpers.cs" />
     <Compile Include="AdalIdHelper.cs" />
     <Compile Include="AdalServiceException.cs" />
     <Compile Include="AdalSilentTokenAcquisitionException.cs" />
