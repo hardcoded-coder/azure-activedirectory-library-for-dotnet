@@ -17,9 +17,6 @@
 //----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 {
@@ -47,15 +44,15 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
     /// </summary>
     internal sealed class TokenCacheKey
     {
-        internal TokenCacheKey(string authority, string[] scopes, string clientId, TokenSubjectType tokenSubjectType, UserInfo userInfo)
-            : this(authority, scopes, clientId, tokenSubjectType, (userInfo != null) ? userInfo.UniqueId : null, (userInfo != null) ? userInfo.DisplayableId : null)
+        internal TokenCacheKey(string authority, string resource, string clientId, TokenSubjectType tokenSubjectType, UserInfo userInfo)
+            : this(authority, resource, clientId, tokenSubjectType, (userInfo != null) ? userInfo.UniqueId : null, (userInfo != null) ? userInfo.DisplayableId : null)
         {
         }
 
-        internal TokenCacheKey(string authority, string[] scopes, string clientId, TokenSubjectType tokenSubjectType, string uniqueId, string displayableId)
+        internal TokenCacheKey(string authority, string resource, string clientId, TokenSubjectType tokenSubjectType, string uniqueId, string displayableId)
         {
             this.Authority = authority;
-            this.Scopes= scopes;
+            this.Resource = resource;
             this.ClientId = clientId;
             this.TokenSubjectType = tokenSubjectType;
             this.UniqueId = uniqueId;
@@ -64,7 +61,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
         public string Authority { get; private set; }
 
-        public string[] Scopes { get; internal set; }
+        public string Resource { get; internal set; }
 
         public string ClientId { get; private set; }
 
@@ -99,7 +96,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             return ReferenceEquals(this, other) ||
                (other != null
                && (other.Authority == this.Authority)
-               && this.ScopeEquals(other.Scopes)
+               && this.ResourceEquals(other.Resource)
                && this.ClientIdEquals(other.ClientId)
                && (other.UniqueId == this.UniqueId)
                && this.DisplayableIdEquals(other.DisplayableId)
@@ -116,46 +113,16 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
         {
             const string Delimiter = ":::";
             return (this.Authority + Delimiter 
-                + AdalHelpers.CreateSingleStringFromArray(this.Scopes).ToLower() + Delimiter
+                + this.Resource.ToLower() + Delimiter
                 + this.ClientId.ToLower() + Delimiter
                 + this.UniqueId + Delimiter
                 + ((this.DisplayableId != null) ? this.DisplayableId.ToLower() : null) + Delimiter
                 + (int)this.TokenSubjectType).GetHashCode();
         }
 
-
-        internal bool ScopeContains(string[] otherScopes)
+        internal bool ResourceEquals(string otherResource)
         {
-            ISet<string> self = AdalHelpers.CreateSetFromArray(this.Scopes);
-            ISet<string> other = AdalHelpers.CreateSetFromArray(otherScopes);
-
-            foreach (string otherString in other)
-            {
-                if (!self.Contains(otherString))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        internal bool ScopeEquals(string[] otherScopes)
-        {
-            ISet<string> self = AdalHelpers.CreateSetFromArray(this.Scopes);
-            ISet<string> other = AdalHelpers.CreateSetFromArray(otherScopes);
-
-            if (self.Count == other.Count)
-            {
-                return self.Intersect(other).Count() == self.Count;
-            }
-
-            return false;
-        }
-
-        public bool ScopeIntersects(string[] otherScopes)
-        {
-            return this.Scopes.Intersect(otherScopes).ToArray().Length > 0;
+            return (string.Compare(otherResource, this.Resource, StringComparison.OrdinalIgnoreCase) == 0);
         }
 
         internal bool ClientIdEquals(string otherClientId)

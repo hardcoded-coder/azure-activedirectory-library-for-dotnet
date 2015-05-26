@@ -27,11 +27,11 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
     internal class DictionaryRequestParameters : Dictionary<string, string>, IRequestParameters
     {
-        public DictionaryRequestParameters(string[] scopes, ClientKey clientKey)
+        public DictionaryRequestParameters(string resource, ClientKey clientKey)
         {
-            if (scopes!=null && scopes.Length > 0)
+            if (!string.IsNullOrWhiteSpace(resource))
             {
-                this[OAuthParameter.Scope] = AdalHelpers.CreateSingleStringFromArray(scopes);
+                this[OAuthParameter.Resource] = resource;
             }
 
             clientKey.AddToParameters(this);    

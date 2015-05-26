@@ -38,10 +38,8 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
         private readonly UserIdentifier userId;
 
-        private readonly string[] scopesForConsent;
-
-        public AcquireTokenInteractiveHandler(Authenticator authenticator, TokenCache tokenCache, string[] scopes, string[] scopesForConsent, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId, string extraQueryParameters, IWebUI webUI)
-            : base(authenticator, tokenCache, scopes, new ClientKey(clientId), TokenSubjectType.User)
+        public AcquireTokenInteractiveHandler(Authenticator authenticator, TokenCache tokenCache, string resource, string clientId, Uri redirectUri, IPlatformParameters parameters, UserIdentifier userId, string extraQueryParameters, IWebUI webUI)
+            : base(authenticator, tokenCache, resource, new ClientKey(clientId), TokenSubjectType.User)
         {
             this.redirectUri = PlatformPlugin.PlatformInformation.ValidateRedirectUri(redirectUri, this.CallState);
 
@@ -51,7 +49,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
             }
 
             this.authorizationParameters = parameters;
-            this.scopesForConsent = scopesForConsent;
+
             this.redirectUriRequestParameter = PlatformPlugin.PlatformInformation.GetRedirectUriAsString(this.redirectUri, this.CallState);
 
             if (userId == null)
@@ -148,7 +146,7 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
 
         private DictionaryRequestParameters CreateAuthorizationRequest(string loginHint)
         {
-            var authorizationRequestParameters = new DictionaryRequestParameters(this.Scopes, this.ClientKey);
+            var authorizationRequestParameters = new DictionaryRequestParameters(this.Resource, this.ClientKey);
             authorizationRequestParameters[OAuthParameter.ResponseType] = OAuthResponseType.Code;
 
             authorizationRequestParameters[OAuthParameter.RedirectUri] = this.redirectUriRequestParameter;
