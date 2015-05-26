@@ -31,9 +31,9 @@ namespace Test.ADAL.Common
         private readonly AuthenticationContext context;
 
 
-        public async Task<AuthenticationResultProxy> AcquireTokenAsync(string resource, ClientCredential credential)
+        public async Task<AuthenticationResultProxy> AcquireTokenAsync(string[] scopes, ClientCredential credential)
         {
-            return await RunTaskAsync(this.context.AcquireTokenAsync(resource, credential));
+            return await RunTaskAsync(this.context.AcquireTokenAsync(scopes, credential));
         }
 
         public async Task<AuthenticationResultProxy> AcquireTokenAsync(string resource, ClientAssertionCertificate certificate)

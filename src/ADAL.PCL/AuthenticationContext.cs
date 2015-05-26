@@ -232,42 +232,6 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
         }
 
         /// <summary>
-        /// Acquires an access token from the authority on behalf of a user. It requires using a user token previously received.
-        /// </summary>
-        /// <param name="scopes">...</param>
-        /// <param name="clientCredential">The client credential to use for token acquisition.</param>
-        /// <param name="userAssertion">The user assertion (token) to use for token acquisition.</param>
-        /// <returns>It contains Access Token and the Access Token's expiration time.</returns>
-        public async Task<AuthenticationResult> AcquireTokenAsync(string []scopes, ClientCredential clientCredential, UserAssertion userAssertion)
-        {
-            return await this.AcquireTokenOnBehalfCommonAsync(scopes, new ClientKey(clientCredential), userAssertion);
-        }
-
-        /// <summary>
-        /// Acquires an access token from the authority on behalf of a user. It requires using a user token previously received.
-        /// </summary>
-        /// <param name="scopes">...</param>
-        /// <param name="clientCertificate">The client certificate to use for token acquisition.</param>
-        /// <param name="userAssertion">The user assertion (token) to use for token acquisition.</param>
-        /// <returns>It contains Access Token and the Access Token's expiration time.</returns>
-        public async Task<AuthenticationResult> AcquireTokenAsync(string []scopes, ClientAssertionCertificate clientCertificate, UserAssertion userAssertion)
-        {
-            return await this.AcquireTokenOnBehalfCommonAsync(scopes, new ClientKey(clientCertificate, this.Authenticator), userAssertion);
-        }
-
-        /// <summary>
-        /// Acquires an access token from the authority on behalf of a user. It requires using a user token previously received.
-        /// </summary>
-        /// <param name="scopes">...</param>
-        /// <param name="clientAssertion">The client assertion to use for token acquisition.</param>
-        /// <param name="userAssertion">The user assertion (token) to use for token acquisition.</param>
-        /// <returns>It contains Access Token and the Access Token's expiration time.</returns>
-        public async Task<AuthenticationResult> AcquireTokenAsync(string []scopes, ClientAssertion clientAssertion, UserAssertion userAssertion)
-        {
-            return await this.AcquireTokenOnBehalfCommonAsync(scopes, new ClientKey(clientAssertion), userAssertion);
-        }
-
-        /// <summary>
         /// Acquires security token without asking for user credential.
         /// </summary>
         /// <param name="scopes">...</param>
@@ -359,12 +323,6 @@ namespace Microsoft.IdentityModel.Clients.ActiveDirectory
         private async Task<AuthenticationResult> AcquireTokenByAuthorizationCodeCommonAsync(string authorizationCode, Uri redirectUri, ClientKey clientKey, string []scopes)
         {
             var handler = new AcquireTokenByAuthorizationCodeHandler(this.Authenticator, this.TokenCache, scopes != null ? scopes[0] : null, clientKey, authorizationCode, redirectUri);
-            return await handler.RunAsync();
-        }
-
-        private async Task<AuthenticationResult> AcquireTokenOnBehalfCommonAsync(string []scopes, ClientKey clientKey, UserAssertion userAssertion)
-        {
-            var handler = new AcquireTokenOnBehalfHandler(this.Authenticator, this.TokenCache, scopes[0], clientKey, userAssertion);
             return await handler.RunAsync();
         }
 

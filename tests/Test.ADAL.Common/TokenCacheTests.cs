@@ -137,7 +137,7 @@ namespace Test.ADAL.Common.Unit
             Log.Comment("Storing an entry...");
             AddToDictionary(cache, key, value);
             VerifyCacheItemCount(cache, 1);
-            Log.Comment("Remvoing the only entry...");
+            Log.Comment("Removing the only entry...");
             RemoveFromDictionary(cache, key);
             VerifyCacheItemCount(cache, 0);
             Log.Comment("Trying to remove from an empty cache...");
